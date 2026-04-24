@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Knowledge Base - 智能知识库问答</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        <path d="M8 7h8"/>
+                        <path d="M8 11h8"/>
+                        <path d="M8 15h4"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>知识库问答</h1>
+                    <span>基于文档的智能问答系统</span>
+                </div>
+            </div>
+            
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="docCount">0</span>
+                    <span class="stat-label">文档</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="totalChars">0</span>
+                    <span class="stat-label">字符</span>
+                </div>
+            </div>
+            
+            <button class="btn-settings" id="settingsBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m18.07-4.93l-4.24 4.24m-5.66 5.66L4.93 19.07m14.14 0l-4.24-4.24m-5.66-5.66L4.93 4.93"/>
+                </svg>
+                设置
+            </button>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Knowledge Base Panel -->
+            <aside class="kb-panel">
+                <div class="panel-section">
+                    <h3 class="section-title">上传文档</h3>
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="fileInput" hidden multiple accept=".txt,.md,.pdf,.docx">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p>拖拽文件到这里</p>
+                        <span>或点击选择文件</span>
+                        <div class="upload-types">支持 TXT, MD, PDF</div>
+                    </div>
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="progress-text">上传中...</span>
+                    </div>
+                </div>
+                
+                <div class="panel-section documents-section">
+                    <h3 class="section-title">
+                        我的文档
+                        <button class="btn-clear-docs" id="clearAllDocs" title="清空所有文档">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18"/>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    </h3>
+                    <div class="documents-list" id="documentsList">
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <p>暂无文档</p>
+                            <span>上传文档开始构建知识库</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Q&A Panel -->
+            <section class="qa-panel">
+                <div class="qa-header">
+                    <h2>智能问答</h2>
+                    <p>基于已上传文档进行问答</p>
+                </div>
+                
+                <div class="qa-messages" id="qaMessages">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                        </div>
+                        <h3>欢迎使用知识库问答</h3>
+                        <p>请先上传文档构建知识库，然后就可以针对文档内容提问了。</p>
+                        <div class="example-questions">
+                            <span>例如：</span>
+                            <button class="example-q" data-question="这篇文档的主要内容是什么？">主要内容是什么？</button>
+                            <button class="example-q" data-question="请总结文档中的关键点">总结关键点</button>
+                            <button class="example-q" data-question="文档中提到了哪些重要概念？">重要概念有哪些？</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="qa-input-area">
+                    <div class="qa-input-wrapper">
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="输入你的问题..."
+                            rows="1"
+                        ></textarea>
+                        <button class="send-btn" id="sendBtn" disabled>
+                            <svg class="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                            <svg class="icon-loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="input-hint">按 Enter 发送，Shift + Enter 换行</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>API 设置</h2>
+                <button class="close-btn" id="closeSettings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>API 服务商</label>
+                    <select id="providerSelect">
+                        <optgroup label="国际服务商">
+                            <option value="openai">OpenAI</option>
+                            <option value="azure">Azure OpenAI</option>
+                            <option value="deepseek">DeepSeek</option>
+                        </optgroup>
+                        <optgroup label="国内服务商">
+                            <option value="siliconflow">硅基流动 (免费额度)</option>
+                            <option value="zhipu">智谱 AI (GLM)</option>
+                            <option value="baidu">百度文心一言</option>
+                            <option value="aliyun">阿里通义千问</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>API 端点</label>
+                    <input type="text" id="apiEndpoint" placeholder="选择服务商后自动填充">
+                </div>
+                <div class="setting-group">
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="输入你的 API Key">
+                </div>
+                <div class="setting-group">
+                    <label>模型</label>
+                    <select id="modelSelect">
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="saveSettings">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
